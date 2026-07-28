@@ -1,0 +1,65 @@
+# ==========================================
+# 1. ENTORNO VIRTUAL Y DEPENDENCIAS LOCALES
+# ==========================================
+.venv/
+venv/
+ENV/
+env/
+
+# ==========================================
+# 2. VARIABLES DE ENTORNO Y CREDENCIALES (CRÍTICO)
+# ==========================================
+.env
+.env.local
+.env.*.local
+
+# ==========================================
+# 3. PYTHON & CACHÉ
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ==========================================
+# 4. DJANGO (BD LOCAL, ARCHIVOS ESTÁTICOS / MEDIA)
+# ==========================================
+*.log
+*.sqlite3
+*.sqlite3-journal
+/staticfiles/
+/media/
+
+# ==========================================
+# 5. CONFIGURACIÓN DE EDITORES / IDEs
+# ==========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ==========================================
+# 6. DOCKER / DATOS PERSISTENTES LOCALES
+# ==========================================
+# Si creas carpetas locales para mapear volúmenes de base de datos (p. ej. Postgres):
+.postgres_data/
+.db_data/

@@ -1,0 +1,73 @@
+{% extends 'core/base_login.html' %}
+{% load static %}
+{% block title %}Verificacion 2FA{% endblock %}
+{% block content %}
+    {% if messages %}
+        <div class="toast-container">
+            {% for message in messages %}
+                <div class="toast {% if message.tags == 'error' %}toast-danger{% else %}toast-info{% endif %} show"
+                     role="{% if message.tags == 'error' %}alert{% else %}status{% endif %}"
+                     aria-live="{% if message.tags == 'error' %}assertive{% else %}polite{% endif %}"
+                     aria-atomic="true"
+                     data-bs-autohide="true"
+                     data-bs-delay="6000">
+                    <div class="toast-header">
+                        {% if message.tags == 'error' %}
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <strong class="me-auto">Error</strong>
+                        {% else %}
+                            <i class="fas fa-paper-plane me-2"></i>
+                            <strong class="me-auto">Informacion</strong>
+                        {% endif %}
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="toast"
+                                aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">{{ message }}</div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    {% if form.codigo_2fa.errors %}
+        <div class="toast-container">
+            <div class="toast toast-danger show"
+                 role="alert"
+                 aria-live="polite"
+                 aria-atomic="true"
+                 data-bs-autohide="true"
+                 data-bs-delay="6000">
+                <div class="toast-header">
+                    <i class="fas fa-times-circle me-2"></i>
+                    <strong class="me-auto">Error</strong>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="toast"
+                            aria-label="Close"></button>
+                </div>
+                <div class="toast-body">{{ form.codigo_2fa.errors.0 }}</div>
+            </div>
+        </div>
+    {% endif %}
+    <div class="login-container">
+        <div class=logo-container>
+            <img src="{% static 'core/img/logo-azul.svg' %}" alt="Logo" class="logo">
+        </div>
+        <form method="post" class="login-form">
+            {% csrf_token %}
+            <div class="input-group">
+                <i class="fas fa-key"></i>
+                <input type="text"
+                       name="codigo_2fa"
+                       placeholder="Código de verificación"
+                       maxlength="6"
+                       inputmode="numeric"
+                       pattern="[0-9]*"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                       required
+                       autocomplete="off">
+            </div>
+            <button type="sumbit" class="login-button">Verificar</button>
+        </form>
+    </div>
+{% endblock %}
