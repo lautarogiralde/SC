@@ -1,63 +1,68 @@
-// static/js/main.js
+document.addEventListener('DOMContentLoaded', () => {
+    const header = document.querySelector('.site-header');
+    const navbar = document.getElementById('navbar-menu');
+    const overlay = document.getElementById('navbar-overlay');
+    const toggleBtn = document.getElementById('navbar-toggle');
 
-document.addEventListener('DOMContentLoaded', function () {
-    // Menú hamburguesa
-    const navToggle = document.querySelector('.nav-toggle');
-    const navMenu = document.querySelector('.nav-menu');
+    const LIMITE_SCROLL_HEADER = 150;
 
-    if (navToggle && navMenu) {
-        navToggle.addEventListener('click', function () {
-            navMenu.classList.toggle('active');
-            this.classList.toggle('active');
-        });
+    function toggleMenu() {
+        if (!navbar) return;
+        navbar.classList.toggle('is-open');
+        if (overlay) overlay.classList.toggle('is-open');
+        if (toggleBtn) toggleBtn.classList.toggle('is-open');
     }
 
-    // Cerrar menú al hacer clic fuera
-    document.addEventListener('click', function (event) {
-        if (!event.target.closest('.site-header') && navMenu && navMenu.classList.contains('active')) {
-            navMenu.classList.remove('active');
-            if (navToggle) navToggle.classList.remove('active');
-        }
+    if (toggleBtn) toggleBtn.addEventListener('click', toggleMenu);
+    if (overlay) overlay.addEventListener('click', toggleMenu);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeMenu();
     });
 
-    // Cerrar menú al hacer clic en enlaces del menú
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks.forEach(link => {
-        link.addEventListener('click', function () {
-            if (navMenu && window.innerWidth <= 768) {
-                navMenu.classList.remove('active');
-                if (navToggle) navToggle.classList.remove('active');
-            }
-        });
-    });
+    // CIERRE DEL HEADER 
+    window.addEventListener('scroll', () => {
+        const currentScroll = window.scrollY;
 
-    // Animación suave para los enlaces del menú
-    navLinks.forEach(link => {
-        link.addEventListener('click', function (e) {
-            if (this.getAttribute('href') && this.getAttribute('href').startsWith('#')) {
-                e.preventDefault();
-                const targetId = this.getAttribute('href');
-                const targetElement = document.querySelector(targetId);
-                if (targetElement) {
-                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }
-        });
-    });
-
-    // Cambiar estilo del header al hacer scroll
-    const header = document.querySelector('.site-header');
-    let lastScrollTop = 0;
-
-    window.addEventListener('scroll', function () {
-        let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
-        if (scrollTop > lastScrollTop && scrollTop > 100) {
-            header.classList.add('header-hidden');
+        if (currentScroll > LIMITE_SCROLL_HEADER) {
+            header?.classList.add('is-hidden');
+            navbar.style.top = 0;
         } else {
-            header.classList.remove('header-hidden');
+            header?.classList.remove('is-hidden');
+            navbar.style.top = `${header.offsetHeight - 1}px`
         }
+    }, { passive: true });
 
-        lastScrollTop = scrollTop;
+    // DESACTIVA LAS ANIMACIONES CUANDO SE REESCALA LA VENTANA
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        navbar.style.transition = 'none';
+        resizeTimer = setTimeout(() => {
+            navbar.style.transition = '';
+        }, 200);
+    })
+
+    // TOASTS
+    const toasts = document.querySelectorAll('.toast');
+    if (typeof bootstrap === 'undefined' || !bootstrap.Toast) return;
+
+    toasts.forEach(toastEl => {
+        const bsToast = bootstrap.Toast.getOrCreateInstance(toastEl);
+        let isExiting = false;
+
+        // 2. Interceptamos el evento nativo de Bootstrap 'hide.bs.toast'
+        toastEl.addEventListener('hide.bs.toast', (e) => {
+            if (!isExiting) {
+                // Pausamos la eliminación brusca predeterminada de Bootstrap
+                e.preventDefault();
+                isExiting = true;
+
+                toastEl.classList.add('salida');
+                bsToast.hide(); // Ahora sí lo cierra Bootstrap
+            }
+        });
+        bsToast.show();
     });
+    navbar.style.top = `${header.offsetHeight - 1}px`
 });

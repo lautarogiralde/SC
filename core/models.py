@@ -119,4 +119,4 @@ class DispositivoAutorizado(models.Model):
     ultimo_acceso = models.TimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.usuario.nombre}, {self.usuario.apellido} - {self.nombre_dispositivo} ({'Autorizado' if self.autorizado else 'Denegado'})"
+        return f"{self.usuario.first_name}, {self.usuario.last_name} - {self.nombre_dispositivo} ({'Autorizado' if self.autorizado else 'Denegado'})"

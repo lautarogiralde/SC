@@ -1,28 +1,39 @@
-<!-- chat/templates/chat/index.html -->
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8" />
-        <title>Chat Rooms</title>
-    </head>
-    <body>
-        What chat room would you like to enter?
-        <br>
-        <input id="room-name-input" type="text" size="100">
-        <br>
-        <input id="room-name-submit" type="button" value="Enter">
-        <script>
-        document.querySelector('#room-name-input').focus();
-        document.querySelector('#room-name-input').onkeyup = function(e) {
-            if (e.key === 'Enter') {  // enter, return
-                document.querySelector('#room-name-submit').click();
-            }
-        };
-
-        document.querySelector('#room-name-submit').onclick = function(e) {
-            var roomName = document.querySelector('#room-name-input').value;
-            window.location.pathname = '/chat/' + roomName + '/';
-        };
-        </script>
-    </body>
-</html>
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}
+    <link href="{% static 'chat/css/chat.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+    <div class="row g-0 flex-grow-1 w-100 h-100 overflow-hidden">
+        <aside class="col-12 col-md-4 col-lg-3 g-0 flex-grow-1 w-100 h-100 overflow-hidden">
+            <div class="p-3 border-bottom">
+                <h5 class="mb-0">Conversaciones</h5>
+            </div>
+            <div class="flex-grow-1 overflow-y-auto">
+                <a href="#" class="d-block p-3 border-bottom text-decoration-none">
+                    <strong>Nombre del chat 1</strong>
+                </a>
+                <a href="#" class="d-block p-3 border-bottom text-decoration-none">
+                    <strong>Nombre del chat 2</strong>
+                </a>
+            </div>
+        </aside>
+        <main class="col-12 col-md-8 col-lg-9 d-flex flex-column h-100">
+            <header class="p-3 border-bottom">
+                <h6 class="mb-0">Nombre del contacto o grupo</h6>
+            </header>
+            <section id="mensajes-log" class="flex-grow-1 overflow-y-auto">
+                Esto es un mensaje
+            </section>
+            <footer class="p-3 border-top">
+                <form id="form-mensaje" class="d-flex gap-2">
+                    <input type="text"
+                           class="form-control"
+                           placeholder="Mensaje..."
+                           autocomplete="off">
+                    <button type="submit" class="btn btn-primary">Enviar</button>
+                </form>
+            </footer>
+        </main>
+    </div>
+{% endblock %}

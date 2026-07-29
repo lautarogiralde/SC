@@ -42,7 +42,7 @@ services:
       - .env
     depends_on:
       db:
-        condition: service_healthy # Espera al healthcheck de la base de datos
+        condition: service_healthy
       redis:
         condition: service_started
 

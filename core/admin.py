@@ -82,7 +82,7 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
         'is_active',
     )
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'rol', 'area', 'sexo')
-    search_fields = ('username', 'nombre', 'apellido', 'email', 'dni')
+    search_fields = ('username', 'first_name', 'last_name', 'email', 'dni')
     readonly_fields = ('intentos_fallidos', 'ultimo_acceso', 'fecha_creacion')
 
     # Controles multiselección para las aplicaciones
@@ -100,8 +100,8 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
             'Información Personal',
             {
                 'fields': (
-                    'nombre',
-                    'apellido',
+                    'first_name',
+                    'last_name',
                     'email',
                     'telefono',
                     'dni',
@@ -153,8 +153,8 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
                 'Información Personal',
                 {
                     'fields': (
-                        'nombre',
-                        'apellido',
+                        'first_name',
+                        'last_name',
                         'email',
                         'telefono',
                         'dni',

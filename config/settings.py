@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     # Auditoría e historial de cambios en modelos
     'simple_history',
+    # Partials
+    'template_partials',
     # =========================
     # Aplicaciones core
     # =========================

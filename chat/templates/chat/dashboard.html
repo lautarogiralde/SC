@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load partials %}
+{% block content %}
+    <div class="container-fluid vh-100 py-3">
+        <div class="row h-100 border rounded overflow-hidden">
+            <!-- COLUMNA IZQUIERDA: LISTA DE SALAS -->
+            <aside class="col-12 col-md-4 border-end bg-light p-0 d-flex flex-column h-100">
+                <header class="p-3 border-bottom bg-white">
+                    <h5 class="mb-0">Mis Chats</h5>
+                </header>
+                <div class="list-group list-group-flush overflow-y-auto flex-grow-1">
+                    {% for chat in chats %}
+                        <!-- Usa chat_uuid y chat.chat_uuid -->
+                        <button class="list-group-item list-group-item-action p-3"
+                                hx-get="{% url 'detalle_chat' chat_uuid=chat.chat_uuid %}"
+                                hx-target="#panel-chat-container"
+                                hx-swap="innerHTML">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ chat.nombre|default:"Chat sin nombre" }}</h6>
+                            </div>
+                        </button>
+                    {% empty %}
+                        <div class="p-3 text-muted">No tenés chats activos.</div>
+                    {% endfor %}
+                </div>
+            </aside>
+            <!-- COLUMNA DERECHA: PANEL DE CHAT (CONTENEDOR) -->
+            <main id="panel-chat-container" class="col-12 col-md-8 p-0 h-100 bg-white">
+                <!-- PARTIAL DEL CHAT SELECCIONADO -->
+                {% partialdef panel-chat %}
+                    {% if chat_activo %}
+                        <!-- La directiva hx-ext="ws" activa el script de htmx-ext-ws v2 -->
+                        <div hx-ext="ws"
+                             ws-connect="/ws/chat/{{ chat_activo.chat_uuid }}/"
+                             class="d-flex flex-column h-100">
+                            <!-- HEADER DEL CHAT (Título de la sala) -->
+                            <header class="p-3 border-bottom bg-light d-flex align-items-center justify-content-between">
+                                <div>
+                                    <!-- Muestra el nombre del chat, o un fallback si es None -->
+                                    <h6 class="mb-0 fw-bold">{{ chat_activo.nombre|default:"Chat sin nombre" }}</h6>
+                                    <small class="text-muted">
+                                        {% if chat_activo.es_privado %}
+                                            Chat Privado
+                                        {% else %}
+                                            {{ chat_activo.miembros.count }} miembro{{ chat_activo.miembros.count|pluralize }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </header>
+                            <!-- Historial de mensajes -->
+                            <section id="mensajes-log" class="flex-grow-1 p-3 overflow-y-auto">
+                                {% for mensaje in chat_activo.mensajes.all reversed %}
+                                    <div class="mb-2">
+                                        <strong>{{ mensaje.usuario.username }}:</strong> {{ mensaje.texto }}
+                                    </div>
+                                {% empty %}
+                                    <div class="text-muted text-center my-auto">No hay mensajes aún en este chat.</div>
+                                {% endfor %}
+                            </section>
+                            <!-- Formulario de envío -->
+                            <footer class="p-3 border-top">
+                                <form ws-send class="d-flex gap-2">
+                                    <input type="text"
+                                           name="texto"
+                                           class="form-control"
+                                           placeholder="Escribir mensaje..."
+                                           autocomplete="off"
+                                           required>
+                                    <button type="submit" class="btn btn-primary">Enviar</button>
+                                </form>
+                            </footer>
+                        </div>
+                    {% else %}
+                        <!-- Pantalla de bienvenida cuando no hay ningún chat seleccionado -->
+                        <div class="d-flex h-100 align-items-center justify-content-center text-muted">
+                            <p>Seleccioná un chat de la lista para empezar a conversar.</p>
+                        </div>
+                    {% endif %}
+                {% endpartialdef %}
+            </main>
+        </div>
+    </div>
+{% endblock %}
