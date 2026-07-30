@@ -1,10 +1,11 @@
 import uuid
+
+from django.conf import settings
+from django.contrib.auth.models import AbstractUser
+from django.core.validators import RegexValidator
 from django.db import models
 from django.utils import timezone
-from django.contrib.auth.models import AbstractUser
 from simple_history.models import HistoricalRecords
-from django.core.validators import RegexValidator
-from django.conf import settings
 
 # Create your models here.
 
@@ -16,8 +17,8 @@ class Area(models.Model):
         return self.nombre
 
     class Meta:
-        verbose_name = 'Área'
-        verbose_name_plural = 'Áreas'
+        verbose_name = "Área"
+        verbose_name_plural = "Áreas"
 
 
 class AplicacionPrincipal(models.Model):
@@ -29,8 +30,8 @@ class AplicacionPrincipal(models.Model):
         return self.nombre
 
     class Meta:
-        verbose_name = 'Aplicacion Principal'
-        verbose_name_plural = 'Aplicaciones Principales'
+        verbose_name = "Aplicacion Principal"
+        verbose_name_plural = "Aplicaciones Principales"
 
 
 class AplicacionHabilitada(models.Model):
@@ -38,15 +39,17 @@ class AplicacionHabilitada(models.Model):
     ruta = models.CharField(max_length=50, unique=True)
     descripcion = models.TextField(blank=True, null=True)
     aplicacionPrincipal = models.ForeignKey(
-        AplicacionPrincipal, on_delete=models.PROTECT, related_name='sub_aplicaciones'
+        AplicacionPrincipal,
+        on_delete=models.PROTECT,
+        related_name="sub_aplicaciones",
     )
 
     def __str__(self):
         return f"{self.aplicacionPrincipal.nombre} - {self.nombre}"
 
     class Meta:
-        verbose_name = 'Aplicación Habilitada'
-        verbose_name_plural = 'Aplicaciones Habilitadas'
+        verbose_name = "Aplicación Habilitada"
+        verbose_name_plural = "Aplicaciones Habilitadas"
 
 
 class Rol(models.Model):
@@ -56,15 +59,17 @@ class Rol(models.Model):
         return self.nombre
 
     class Meta:
-        verbose_name = 'Rol'
-        verbose_name_plural = 'Roles'
+        verbose_name = "Rol"
+        verbose_name_plural = "Roles"
 
 
 class Usuario(AbstractUser):
-    rol = models.ForeignKey(Rol, on_delete=models.SET_NULL, null=True, blank=True)
+    rol = models.ForeignKey(
+        Rol, on_delete=models.SET_NULL, null=True, blank=True
+    )
     telefono = models.CharField(max_length=10)
     dni_validator = RegexValidator(
-        regex=r'^\d{7,8}$',
+        regex=r"^\d{7,8}$",
         message="El DNI debe contener 7 u 8 dígitos sin puntos ni guiones.",
     )
     dni = models.CharField(
@@ -73,32 +78,44 @@ class Usuario(AbstractUser):
         validators=[dni_validator],
     )
     area = models.ForeignKey(
-        Area, on_delete=models.PROTECT, null=True, blank=True, verbose_name="Area"
+        Area,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        verbose_name="Area",
     )
     SEXO_CHOICES = (
-        ('M', 'Masculino'),
-        ('F', 'Femenino'),
-        ('O', 'Otro'),
+        ("M", "Masculino"),
+        ("F", "Femenino"),
+        ("O", "Otro"),
     )
     sexo = models.CharField(
-        max_length=1, choices=SEXO_CHOICES, blank=True, null=True, verbose_name='Sexo'
+        max_length=1,
+        choices=SEXO_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Sexo",
     )
     aplicaciones_principales = models.ManyToManyField(
-        AplicacionPrincipal, blank=True, related_name='usuarios_con_acceso_completo'
+        AplicacionPrincipal,
+        blank=True,
+        related_name="usuarios_con_acceso_completo",
     )
-    aplicaciones_habilitadas = models.ManyToManyField(AplicacionHabilitada, blank=True)
+    aplicaciones_habilitadas = models.ManyToManyField(
+        AplicacionHabilitada, blank=True
+    )
     ultimo_acceso = models.DateTimeField(
-        null=True, blank=True, verbose_name='Último Acceso'
+        null=True, blank=True, verbose_name="Último Acceso"
     )
     fecha_creacion = models.DateTimeField(
-        verbose_name='Fecha de Creación', default=timezone.now
+        verbose_name="Fecha de Creación", default=timezone.now
     )
     intentos_fallidos = models.IntegerField(default=0)
     history = HistoricalRecords()
 
     def save(self, *args, **kwargs):
         if not self.rol:
-            rol_defecto, _ = Rol.objects.get_or_create(nombre='Invitado')
+            rol_defecto, _ = Rol.objects.get_or_create(nombre="Invitado")
             self.rol = rol_defecto
         super().save(*args, **kwargs)
 
@@ -108,10 +125,14 @@ class Usuario(AbstractUser):
 
 class DispositivoAutorizado(models.Model):
     usuario = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='dispositivos'
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="dispositivos",
     )
     nombre_dispositivo = models.CharField(max_length=100)
-    device_token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    device_token = models.UUIDField(
+        default=uuid.uuid4, unique=True, editable=False
+    )
     user_agent = models.TextField()
     ip_registrado = models.GenericIPAddressField()
     autorizado = models.BooleanField(default=True)

@@ -1,8 +1,9 @@
 # chat/consumers.py
 import json
 
-from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
+from channels.generic.websocket import AsyncWebsocketConsumer
+
 from .models import Chat, Mensaje
 
 
@@ -23,7 +24,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return
 
         self.room_group_name = f"chat_{self.chat_uuid}"
-        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        await self.channel_layer.group_add(
+            self.room_group_name, self.channel_name
+        )
 
         await self.accept()
 
@@ -33,7 +36,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         # Leave room group
-        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+        await self.channel_layer.group_discard(
+            self.room_group_name, self.channel_name
+        )
 
     # Receive message from WebSocket
     async def receive(self, text_data):
@@ -47,7 +52,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return
 
         # Guardamos el mensaje en la base de datos de forma asíncrona
-        mensaje_obj = await self.crear_mensaje(self.chat_uuid, self.user, texto_mensaje)
+        mensaje_obj = await self.crear_mensaje(
+            self.chat_uuid, self.user, texto_mensaje
+        )
 
         # Emitimos un evento a TODOS los integrantes suscritos a este grupo de WebSocket
         await self.channel_layer.group_send(
@@ -65,13 +72,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # Renderizamos el fragmento HTML del mensaje
         # (puedes usar un snippet/partial o un string formateado)
-        html_mensaje = f'''
+        html_mensaje = f"""
         <div id="mensajes-log" hx-swap-oob="beforeend">
             <div class="mb-2">
                 <strong>{mensaje.usuario.username}:</strong> {mensaje.texto}
             </div>
         </div>
-        '''
+        """
 
         # HTMX intercepta este HTML enviado por el socket y lo inserta en el DOM
         await self.send(text_data=html_mensaje)

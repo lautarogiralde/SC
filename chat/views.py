@@ -1,6 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView
 from django.shortcuts import get_object_or_404, render
+from django.views.generic import ListView
+
 from .models import Chat
 
 
@@ -18,7 +19,9 @@ class ChatDashboardView(LoginRequiredMixin, ListView):
         chat_uuid = kwargs.get("chat_uuid")
 
         if request.headers.get("HX-Request") and chat_uuid:
-            chat = get_object_or_404(Chat, chat_uuid=chat_uuid, miembros=request.user)
+            chat = get_object_or_404(
+                Chat, chat_uuid=chat_uuid, miembros=request.user
+            )
             # Renderizamos SOLAMENTE el partial del chat seleccionado
             return render(
                 request, "chat/dashboard.html#panel-chat", {"chat_activo": chat}
