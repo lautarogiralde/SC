@@ -1,0 +1,23 @@
+{% if chat_activo %}
+{% for mensaje in chat_activo.mensajes.all reversed %}
+{% if mensaje.usuario == user %}
+<li class="mb-2 justify-end">
+  <div class="mensaje-propio">
+    <span>{{ mensaje.texto }}</span>
+  </div>
+</li>
+{% else %}
+<li class="mb-2 justify-start">
+  <div class="mensaje-otro">
+    <span>{{ mensaje.texto }}</span>
+  </div>
+</li>
+{% endif %}
+{% empty %}
+<p>Aún no hay mensajes en este chat</p>
+{% endfor %}
+{% else %}
+<div class="d-flex flex-grow-1 justify-content-center">
+  <p>Seleccione un chat del listado</p>
+</div>
+{% endif %}

@@ -50,8 +50,8 @@
         <script src="https://unpkg.com/htmx.org@2.0.4"></script>
         <script src="https://unpkg.com/htmx-ext-ws@2.0.1/ws.js"></script>
     </head>
-    <body class="d-flex flex-column min-vh-100 pt-0">
-        <header class="site-header">
+    <body class="d-flex flex-column vh-100 pt-0">
+        <header class="site-header flex-shrink-0">
             <div class="header-container">
                 <!-- BOTON HAMBURGUESA -->
                 <div class="header-item">
@@ -104,90 +104,90 @@
                         </div>
                     {% endfor %}
                     </div>
-                {% endif %}
-                {% if form.non_field_errors %}
-                    <div class="toast toast-danger"
-                         role="alert"
-                         aria-live="assertive"
-                         aria-atomic="true"
-                         data-bs-autohide="true"
-                         data-bs-delay="8000">
-                        <div class="toast-header">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong class="me-auto">Error</strong>
-                            <button type="button"
-                                    class="btn-close"
-                                    data-bs-dismiss="toast"
-                                    aria-label="Close"></button>
-                        </div>
-                        <div class="toast-body">{{ form.non_field_errors.0 }}</div>
+            {% endif %}
+            {% if form.non_field_errors %}
+                <div class="toast toast-danger"
+                     role="alert"
+                     aria-live="assertive"
+                     aria-atomic="true"
+                     data-bs-autohide="true"
+                     data-bs-delay="8000">
+                    <div class="toast-header">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong class="me-auto">Error</strong>
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="toast"
+                                aria-label="Close"></button>
                     </div>
-                    </div>
-                {% endif %}
-        {% endif %}
-        <!-- NAVBAR -->
-        <nav class="nav-menu" id="navbar-menu">
-            <div class="nav-content">
-                {% for secretaria in secretarias %}
-                    <div class="nav-item border-bottom">
-                        {% if secretaria.aplicaciones %}
-                            <!-- BOTON DESPLEGABLE -->
-                            <button class="nav-item-btn d-flex justify-content-between align-items-center w-100 p-2"
-                                    type="button"
-                                    data-bs-toggle="collapse"
-                                    data-bs-target="#subitem-{{ forloop.counter }}"
-                                    aria-expanded="false">
-                                <span>{{ secretaria.nombre }}</span>
-                                <i class="fas fa-chevron-right icon-arrow "></i>
-                            </button>
-                            <!-- SUBITEMS -->
-                            <div id="subitem-{{ forloop.counter }}"
-                                 class="collapse nav-subitems-container">
-                                <ul class="list-unstyled mb-0">
-                                    {% for aplicacion in secretaria.aplicaciones %}
-                                        <li>
-                                            <a href="{{ aplicacion.url }}"
-                                               class="d-block py-1 ps-4 text-decoration-none">{{ aplicacion.nombre }}</a>
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                        {% else %}
-                            <!-- LINK DIRECTO SI NO TIENE SUBITEMS -->
-                            <a href="{{ secretaria.url }}"
-                               class="nav-item-link d-block p-3 text-decoration-none">{{ secretaria.nombre }}</a>
-                        {% endif %}
-                    </div>
-                {% endfor %}
-                {% if user.is_authenticated %}
-                    <form method="post" action="{% url 'logout' %}" class="nav-item">
-                        {% csrf_token %}
-                        <button class="nav-item-btn btn-logout d-flex justify-content-between align-items-center w-100 p-2"
-                                type="submit">
-                            <i class="fas fa-sign-out-alt me-1"></i><span>Cerrar sesión</span>
-                        </button>
-                    </form>
-                {% else %}
-                    <a href="{% url 'inicio' %}"
-                       class="nav-item-btn d-block p-2 text-decoration-none">Iniciar sesión</a>
-                {% endif %}
+                    <div class="toast-body">{{ form.non_field_errors.0 }}</div>
+                </div>
+            {% endif %}
             </div>
-        </nav>
-        <!-- MAIN -->
-        <main role="main"
-              class="d-flex flex-column flex-grow-1 w-100 overflow-hidden">
-            {% block content %}
-            {% endblock %}
-        </main>
-        <footer class="site-footer mt-auto py-3">
+    {% endif %}
+    <!-- NAVBAR -->
+    <nav class="nav-menu" id="navbar-menu">
+        <div class="nav-content">
+            {% for secretaria in secretarias %}
+                <div class="nav-item border-bottom">
+                    {% if secretaria.aplicaciones %}
+                        <!-- BOTON DESPLEGABLE -->
+                        <button class="nav-item-btn d-flex justify-content-between align-items-center w-100 p-2"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#subitem-{{ forloop.counter }}"
+                                aria-expanded="false">
+                            <span>{{ secretaria.nombre }}</span>
+                            <i class="fas fa-chevron-right icon-arrow "></i>
+                        </button>
+                        <!-- SUBITEMS -->
+                        <div id="subitem-{{ forloop.counter }}"
+                             class="collapse nav-subitems-container">
+                            <ul class="list-unstyled mb-0">
+                                {% for aplicacion in secretaria.aplicaciones %}
+                                    <li>
+                                        <a href="{{ aplicacion.url }}"
+                                           class="d-block py-1 ps-4 text-decoration-none">{{ aplicacion.nombre }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% else %}
+                        <!-- LINK DIRECTO SI NO TIENE SUBITEMS -->
+                        <a href="{{ secretaria.url }}"
+                           class="nav-item-link d-block p-3 text-decoration-none">{{ secretaria.nombre }}</a>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            {% if user.is_authenticated %}
+                <form method="post" action="{% url 'logout' %}" class="nav-item">
+                    {% csrf_token %}
+                    <button class="nav-item-btn btn-logout d-flex justify-content-between align-items-center w-100 p-2"
+                            type="submit">
+                        <i class="fas fa-sign-out-alt me-1"></i><span>Cerrar sesión</span>
+                    </button>
+                </form>
+            {% else %}
+                <a href="{% url 'inicio' %}"
+                   class="nav-item-btn d-block p-2 text-decoration-none">Iniciar sesión</a>
+            {% endif %}
+        </div>
+    </nav>
+    <!-- MAIN -->
+    <main role="main"
+          class="d-flex flex-column flex-grow-1 w-100 overflow-hidden">
+        {% block content %}{% endblock %}
+    </main>
+    {% block footer %}
+        <footer class="site-footer flex-shrink-0 mt-auto py-3">
             <div class="container text-center">
                 <span>© 2026 sistema de gestión y administración de datos - v1.0</span>
             </div>
         </footer>
-        {% block extra_js %}
-        {% endblock %}
-        <script src="{% static 'core/js/base.js' %}"></script>
-        <!-- Script para desplegar colapsables -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
+    {% endblock %}
+    {% block extra_js %}{% endblock %}
+    <script src="{% static 'core/js/base.js' %}"></script>
+    <!-- Script para desplegar colapsables -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

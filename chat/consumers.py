@@ -35,32 +35,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return Chat.objects.filter(chat_uuid=chat_uuid, miembros=user).exists()
 
     async def disconnect(self, close_code):
-        # Leave room group
         await self.channel_layer.group_discard(
             self.room_group_name, self.channel_name
         )
 
-    # Receive message from WebSocket
     async def receive(self, text_data):
         data = json.loads(text_data)
 
-        # HTMX envía los inputs usando su atributo 'name'.
-        # Si en tu HTML pones <input name="cuerpo">, acá lees data.get("cuerpo")
         texto_mensaje = data.get("texto")
 
         if not texto_mensaje or not texto_mensaje.strip():
             return
 
-        # Guardamos el mensaje en la base de datos de forma asíncrona
         mensaje_obj = await self.crear_mensaje(
             self.chat_uuid, self.user, texto_mensaje
         )
 
-        # Emitimos un evento a TODOS los integrantes suscritos a este grupo de WebSocket
         await self.channel_layer.group_send(
             self.room_group_name,
             {
-                "type": "chat_message",  # Llama al método 'chat_message' de abajo
+                "type": "chat_message",
                 "mensaje_id": mensaje_obj.id,
             },
         )
@@ -70,8 +64,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         mensaje_id = event["mensaje_id"]
         mensaje = await self.obtener_mensaje(mensaje_id)
 
-        # Renderizamos el fragmento HTML del mensaje
-        # (puedes usar un snippet/partial o un string formateado)
         html_mensaje = f"""
         <div id="mensajes-log" hx-swap-oob="beforeend">
             <div class="mb-2">
@@ -80,10 +72,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         </div>
         """
 
-        # HTMX intercepta este HTML enviado por el socket y lo inserta en el DOM
         await self.send(text_data=html_mensaje)
-
-    # --- Consultas ORM asíncronas ---
 
     @database_sync_to_async
     def crear_mensaje(self, chat_uuid, usuario, texto):

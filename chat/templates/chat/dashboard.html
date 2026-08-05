@@ -1,18 +1,23 @@
 {% extends "base.html" %}
 {% load partials %}
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'chat/css/chat.css' %}">
+{% endblock %}
 {% block content %}
-    <div class="container-fluid vh-100 py-3">
-        <div class="row h-100 border rounded overflow-hidden">
-            <!-- COLUMNA IZQUIERDA: LISTA DE SALAS -->
+    <!-- d-flex flex-column h-100 para consumir todo el espacio interno del main sin pasarse -->
+    <div class="container-fluid flex-grow-1 d-flex flex-column h-100 overflow-hidden py-2">
+        <div class="row w-100 flex-grow-1 border rounded overflow-y-auto g-0 mx-0 h-100">
+            <!-- ASIDE: Lista de chats -->
             <aside class="col-12 col-md-4 border-end bg-light p-0 d-flex flex-column h-100">
-                <header class="p-3 border-bottom bg-white">
+                <header class="p-3 border-bottom bg-white flex-shrink-0">
                     <h5 class="mb-0">Mis Chats</h5>
                 </header>
+                <!-- Scroll interno para la lista -->
                 <div class="list-group list-group-flush overflow-y-auto flex-grow-1">
                     {% for chat in chats %}
-                        <!-- Usa chat_uuid y chat.chat_uuid -->
                         <button class="list-group-item list-group-item-action p-3"
-                                hx-get="{% url 'detalle_chat' chat_uuid=chat.chat_uuid %}"
+                                hx-get="{% url 'detalle_chat' uuid=chat.uuid %}"
                                 hx-target="#panel-chat-container"
                                 hx-swap="innerHTML">
                             <div class="d-flex w-100 justify-content-between">
@@ -24,30 +29,26 @@
                     {% endfor %}
                 </div>
             </aside>
-            <!-- COLUMNA DERECHA: PANEL DE CHAT (CONTENEDOR) -->
-            <main id="panel-chat-container" class="col-12 col-md-8 p-0 h-100 bg-white">
-                <!-- PARTIAL DEL CHAT SELECCIONADO -->
+            <!-- PANEL DE CHAT -->
+            <main id="panel-chat-container"
+                  class="col-12 col-md-8 p-0 h-100 bg-white overflow-y-auto">
                 {% partialdef panel-chat %}
                     {% if chat_activo %}
-                        <!-- La directiva hx-ext="ws" activa el script de htmx-ext-ws v2 -->
                         <div hx-ext="ws"
-                             ws-connect="/ws/chat/{{ chat_activo.chat_uuid }}/"
+                             ws-connect="/ws/chat/{{ chat_activo.uuid }}/"
                              class="d-flex flex-column h-100">
-                            <!-- HEADER DEL CHAT (Título de la sala) -->
-                            <header class="p-3 border-bottom bg-light d-flex align-items-center justify-content-between">
+                            <!-- Header interno del chat -->
+                            <header class="p-3 border-bottom bg-light d-flex align-items-center justify-content-between flex-shrink-0">
                                 <div>
-                                    <!-- Muestra el nombre del chat, o un fallback si es None -->
                                     <h6 class="mb-0 fw-bold">{{ chat_activo.nombre|default:"Chat sin nombre" }}</h6>
                                     <small class="text-muted">
-                                        {% if chat_activo.es_privado %}
-                                            Chat Privado
-                                        {% else %}
+                                        {% if chat_activo.es_privado %} Chat Privado{% else %}
                                             {{ chat_activo.miembros.count }} miembro{{ chat_activo.miembros.count|pluralize }}
                                         {% endif %}
                                     </small>
                                 </div>
                             </header>
-                            <!-- Historial de mensajes -->
+                            <!-- Historial con SCROLL INTERNO -->
                             <section id="mensajes-log" class="flex-grow-1 p-3 overflow-y-auto">
                                 {% for mensaje in chat_activo.mensajes.all reversed %}
                                     <div class="mb-2">
@@ -57,8 +58,8 @@
                                     <div class="text-muted text-center my-auto">No hay mensajes aún en este chat.</div>
                                 {% endfor %}
                             </section>
-                            <!-- Formulario de envío -->
-                            <footer class="p-3 border-top">
+                            <!-- Formulario de envío fijo -->
+                            <footer class="p-3 border-top flex-shrink-0">
                                 <form ws-send class="d-flex gap-2">
                                     <input type="text"
                                            name="texto"
@@ -71,7 +72,6 @@
                             </footer>
                         </div>
                     {% else %}
-                        <!-- Pantalla de bienvenida cuando no hay ningún chat seleccionado -->
                         <div class="d-flex h-100 align-items-center justify-content-center text-muted">
                             <p>Seleccioná un chat de la lista para empezar a conversar.</p>
                         </div>

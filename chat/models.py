@@ -7,9 +7,7 @@ from django.db import models
 
 
 class Chat(models.Model):
-    chat_uuid = models.UUIDField(
-        default=uuid.uuid4, unique=True, editable=False
-    )
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     nombre = models.CharField(max_length=128, null=True, blank=True)
     admin = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -27,7 +25,7 @@ class Chat(models.Model):
     es_privado = models.BooleanField(default=False)
 
     def __str__(self):
-        return str(self.chat_uuid)
+        return str(self.uuid)
 
 
 class Mensaje(models.Model):

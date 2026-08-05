@@ -1,1 +1,84 @@
-{% extends 'base1.html' %}
+{% extends 'base.html' %}
+{% load static %}
+{% load partials %}
+{% block extra_css %}
+    <link href="{% static 'core/css/base.css' %}" rel="stylesheet">
+{% endblock %}
+{% partialdef panel-chat %}
+    {% if chat_activo %}
+        <div class="d-flex flex-column h-100 w-100 overflow-hidden">
+            <!-- Contenedor de lista de mensajes -->
+            <ul id="lista-mensajes"
+                class="flex-grow-1 overflow-y-auto p-3 m-0 list-unstyled d-flex flex-column-reverse">
+                {% for mensaje in chat_activo.mensajes.all %}
+                    {% partial mensaje-chat %}
+                {% empty %}
+                    <li class="text-center text-muted m-auto" id="sin-mensajes">Aún no hay mensajes en este chat</li>
+                {% endfor %}
+            </ul>
+            <!-- Formulario de envío con HTMX -->
+            <form class="p-3 border-top bg-light flex-shrink-0"
+                  hx-post="{% url 'detalle_prueba' uuid=chat_activo.uuid %}"
+                  hx-target="#lista-mensajes"
+                  hx-swap="afterbegin"
+                  hx-on::after-request="if(event.detail.successful) { this.reset(); document.getElementById('sin-mensajes')?.remove(); }">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="text"
+                           name="texto"
+                           class="form-control"
+                           placeholder="Escribe un mensaje..."
+                           required
+                           autocomplete="off">
+                    <button class="btn btn-primary" type="submit">Enviar</button>
+                </div>
+            </form>
+        </div>
+    {% else %}
+        <div class="container-fluid text-center d-flex h-100 align-items-center justify-content-center">
+            <p class="text-muted m-0 p-3">Seleccione un chat del listado</p>
+        </div>
+    {% endif %}
+{% endpartialdef %}
+{% partialdef mensaje-chat %}
+    <!-- Estructura individual de mensaje -->
+    <li class="mb-2 d-flex {% if mensaje.usuario == request.user %}justify-content-end{% else %}justify-content-start{% endif %}">
+        <div class="p-2 px-3 rounded-3 {% if mensaje.usuario == request.user %}bg-primary text-white{% else %}bg-light text-dark border{% endif %}"
+             style="max-width: 75%;
+                    text-break: break-word">
+            <p class="mb-0 small text-break">{{ mensaje.texto }}</p>
+            <span class="d-block text-end mt-1 opacity-75" style="font-size: 0.7rem;">{{ mensaje.creado|date:"H:i" }}</span>
+        </div>
+    </li>
+{% endpartialdef %}
+{% block footer %}{% endblock %}
+{% block content %}
+    <div class="container-fluid d-flex flex-grow-1 h-100 p-0 m-0 overfow-hidden">
+        <aside class="contactos d-bloc d-md-flex flex-column h-100 col-12 col-md-4 h-100 border-end p-0">
+            <div class="p-3 border-bottom flex-shrink-0">
+                <h2 class="h5 mb-0">Contactos</h2>
+            </div>
+            {% if chats %}
+                <div class="list-group list-group-flush w-100 flex-grow-1 overfow-y-auto">
+                    {% for chat in chats %}
+                        <button type="button"
+                                class="list-group-item list-group-item-action p-3 border-bottom text-start"
+                                hx-get="{% url 'detalle_prueba' uuid=chat.uuid %}"
+                                hx-target="#panel-chat-containder"
+                                hx-swap="innerHTML"
+                                hx-push-url="false">
+                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                <h6 class="mb-0 text-truncate">{{ chat.nombre }}</h6>
+                            </div>
+                        </button>
+                    {% empty %}
+                        <div class="d-flex w-100 justify-content-between align-items-center">
+                            <h6 class="mb-0">No hay chats activos</h6>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </aside>
+        <div id="panel-chat-containder" class="panel-chat-containder container">{% partial panel-chat %}</div>
+    </div>
+{% endblock %}
