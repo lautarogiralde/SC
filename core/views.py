@@ -4,16 +4,17 @@ import uuid
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.views import LoginView, login_required
+from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import FormView, TemplateView
 
+from notificaciones.services import notificar_usuario
+
 from .forms import CustomLoginForm, Verificacion2FAForm
 from .models import DispositivoAutorizado, Usuario
-
-# Create your views here.
 
 
 def enviar_codigo(codigo):
@@ -59,9 +60,10 @@ class CustomLoginView(LoginView):
         self.request.session["otp_created_at"] = int(timezone.now().timestamp())
 
         enviar_codigo(codigo_otp)
-        messages.info(
-            self.request,
-            "Se envió el código de verificación a los administradores.",
+        notificar_usuario(
+            user_id=user.id,
+            mensaje="Se envió el código de verificación a los administradores.",
+            tag="info",
         )
         return redirect("verificar_2fa")
 
@@ -148,9 +150,13 @@ class Verificar2FAView(FormView):
         # Si el error fue por expiración o sesión nula
         if any("EXPIRED" in error for error in form.non_field_errors()):
             self._limpiar_sesion_temp()
-            messages.error(
-                self.request, "El código expiró. Vuelva a iniciar sesión."
-            )
+            user_id = self.request.session.get("pre_2fa_user_id")
+            if user_id:
+                notificar_usuario(
+                    user_id=user_id,
+                    mensaje="El código expiró. Vuelva a iniciar sesión.",
+                    tag="error",
+                )
             return redirect("login")
 
         # Si fue un error normal (código incorrecto / < 6 dígitos),
@@ -163,6 +169,26 @@ class Verificar2FAView(FormView):
         self.request.session.pop("otp_created_at", None)
 
 
+@login_required
+def notificaciones_iniciales(request):
+    notificar_usuario(
+        user_id=request.user.id,
+        mensaje="¡Esta es una notificación de éxito!",
+        tag="success",
+    )
+    notificar_usuario(
+        user_id=request.user.id,
+        mensaje="Aviso informativo del sistema.",
+        tag="info",
+    )
+    notificar_usuario(
+        user_id=request.user.id,
+        mensaje="Ocurrió un error grave al procesar la solicitud.",
+        tag="error",
+    )
+    return HttpResponse("")
+
+
 class Inicio(LoginRequiredMixin, TemplateView):
     template_name = "core/inicio.html"
     login_url = "/login"
@@ -170,12 +196,5 @@ class Inicio(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        request = self.request
-        messages.success(request, "¡Esta es una notificación de éxito!")
-        messages.info(request, "Aviso informativo del sistema.")
-        messages.error(
-            request, "Ocurrió un error grave al procesar la solicitud."
-        )
-
         context["username"] = user.first_name or user.username
         return context

@@ -48,26 +48,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 200);
   });
 
-  // TOASTS
-  const toasts = document.querySelectorAll(".toast");
-  if (typeof bootstrap === "undefined" || !bootstrap.Toast) return;
-
-  toasts.forEach((toastEl) => {
-    const bsToast = bootstrap.Toast.getOrCreateInstance(toastEl);
-    let isExiting = false;
-
-    // 2. Interceptamos el evento nativo de Bootstrap 'hide.bs.toast'
-    toastEl.addEventListener("hide.bs.toast", (e) => {
-      if (!isExiting) {
-        // Pausamos la eliminación brusca predeterminada de Bootstrap
-        e.preventDefault();
-        isExiting = true;
-
-        toastEl.classList.add("salida");
-        bsToast.hide(); // Ahora sí lo cierra Bootstrap
-      }
-    });
-    bsToast.show();
-  });
   navbar.style.top = `${header.offsetHeight - 1}px`;
+
+  // AJUSTE PADDING
+  function ajustarPaddingMain() {
+    const main = document.querySelector("main");
+
+    if (header && main) {
+      const headerHeight = header.offsetHeight;
+      main.style.paddingTop = `${headerHeight - 1}px`;
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", ajustarPaddingMain);
+  window.addEventListener("resize", ajustarPaddingMain);
+  document.body.addEventListener("htmx:afterSettle", ajustarPaddingMain);
 });

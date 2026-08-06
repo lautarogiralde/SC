@@ -23,10 +23,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.close()
             return
 
-        self.room_group_name = f"chat_{self.chat_uuid}"
-        await self.channel_layer.group_add(
-            self.room_group_name, self.channel_name
-        )
+        self.nombre_canal = f"chat_{self.chat_uuid}"
+        await self.channel_layer.group_add(self.nombre_canal, self.channel_name)
 
         await self.accept()
 
@@ -36,7 +34,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(
-            self.room_group_name, self.channel_name
+            self.nombre_canal, self.channel_name
         )
 
     async def receive(self, text_data):
@@ -52,7 +50,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
         await self.channel_layer.group_send(
-            self.room_group_name,
+            self.nombre_canal,
             {
                 "type": "chat_message",
                 "mensaje_id": mensaje_obj.id,

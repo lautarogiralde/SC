@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     # Aplicaciones core
     # =========================
     "chat",
+    "notificaciones",
     "core",
 ]
 AUTH_USER_MODEL = "core.Usuario"
