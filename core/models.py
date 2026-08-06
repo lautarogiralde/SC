@@ -113,6 +113,83 @@ class Usuario(AbstractUser):
     intentos_fallidos = models.IntegerField(default=0)
     history = HistoricalRecords()
 
+    def get_aplicaciones_habilitadas(self):
+        agrupado = defaultdict(list)
+        if (
+            self.is_superuser
+            or self.groups.filter(name="Administradores").exists()
+        ):
+            principales = AplicacionPrincipal.objects.prefetch_related(
+                "sub_aplicaciones"
+            ).order_by("nombre")
+
+            for principal in principales:
+                sub_aplicaciones = principal.sub_aplicaciones.all().order_by(
+                    "nombre"
+                )
+
+                if sub_aplicaciones.exists():
+                    for sub_aplicacion in sub_aplicaciones:
+                        ruta_base = "/" + principal.ruta_base.strip("/")
+                        ruta_sub = sub_aplicacion.ruta.lstrip("/")
+                        url = (
+                            f"{ruta_base}/{ruta_sub}" if ruta_sub else ruta_base
+                        )
+
+                        agrupado[principal].append(
+                            {
+                                "nombre": sub_aplicacion.nombre,
+                                "url": url,
+                            }
+                        )
+                else:
+                    agrupado[principal] = []
+
+        else:
+            sub_aplicaciones = (
+                AplicacionHabilitada.objects.filter(
+                    Q(
+                        aplicacionPrincipal__in=self.aplicaciones_principales.all()
+                    )
+                    | Q(id__in=self.aplicaciones_habilitadas.all())
+                )
+                .select_related("aplicacionPrincipal")
+                .order_by("aplicacionPrincipal__nombre", "nombre")
+                .distinct()
+            )
+
+        for aplicacion in sub_aplicaciones:
+            ruta_base = "/" + aplicacion.aplicacionPrincipal.ruta_base.strip(
+                "/"
+            )
+            ruta_sub = aplicacion.ruta.lstrip("/")
+            url = f"{ruta_base}/{ruta_sub}" if ruta_sub else ruta_base
+            agrupado[aplicacion.aplicacionPrincipal].append(
+                {
+                    "nombre": aplicacion.nombre,
+                    "url": url,
+                }
+            )
+
+        return [
+            {
+                "nombre": principal.nombre,
+                "url": principal.ruta_base,
+                "aplicaciones": subs,
+            }
+            for principal, subs in agrupado.items()
+        ]
+
+    def tiene_acceso(self, nombre_aplicacion):
+        if (
+            self.is_superuser
+            or self.groups.filter(name="Administradores").exists()
+        ):
+            return True
+        return self.aplicaciones_habilitadas.filter(
+            nombre="nombre_aplicacion"
+        ).exists()
+
     def save(self, *args, **kwargs):
         if not self.rol:
             rol_defecto, _ = Rol.objects.get_or_create(nombre="Invitado")
