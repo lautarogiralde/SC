@@ -1,9 +1,11 @@
 import uuid
+from collections import defaultdict
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 from simple_history.models import HistoricalRecords
 
@@ -157,6 +159,7 @@ class Usuario(AbstractUser):
                 .order_by("aplicacionPrincipal__nombre", "nombre")
                 .distinct()
             )
+        agrupado = defaultdict(list)
 
         for aplicacion in sub_aplicaciones:
             ruta_base = "/" + aplicacion.aplicacionPrincipal.ruta_base.strip(

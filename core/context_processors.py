@@ -5,25 +5,7 @@ def get_navbar_items(request):
 
     user = request.user
     secretarias = []
-
-    principales = user.aplicaciones_principales.prefetch_ralted(
-        "sub_aplicaciones"
-    ).all()
-
-    for principal in principales:
-        secretarias.append(
-            {
-                "nombre": principal.nombre,
-                "url": principal.ruta_base,
-                "aplicaciones": [
-                    {
-                        "nombre": sub.nombre,
-                        "url": sub.ruta,
-                    }
-                    for sub in principal.sub_aplicaciones.all()
-                ],
-            }
-        )
+    secretarias.extend(user.get_aplicaciones_habilitadas())
     # 1. Módulo de Usuarios (Ejemplo: Solo si es superusuario o tiene un permiso específico)
     if user.is_superuser or user.has_perm("auth.view_user"):
         secretarias.append(
