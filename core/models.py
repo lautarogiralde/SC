@@ -1,9 +1,11 @@
 import uuid
+from collections import defaultdict
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 from simple_history.models import HistoricalRecords
 
@@ -112,6 +114,62 @@ class Usuario(AbstractUser):
     )
     intentos_fallidos = models.IntegerField(default=0)
     history = HistoricalRecords()
+
+    def get_aplicaciones_habilitadas(self):
+        if (
+            self.is_superuser
+            or self.groups.filter(name="Administradores").exists()
+        ):
+            sub_aplicaciones = (
+                AplicacionHabilitada.objects.all()
+                .select_related("aplicacionPrincipal")
+                .order_by("aplicacionPrincipal__nombre", "nombre")
+            )
+        else:
+            sub_aplicaciones = (
+                AplicacionHabilitada.objects.filter(
+                    Q(
+                        aplicacionPrincipal__in=self.aplicaciones_principales.all()
+                    )
+                    | Q(id__in=self.aplicaciones_habilitadas.all())
+                )
+                .select_related("aplicacionPrincipal")
+                .order_by("aplicacionPrincipal__nombre", "nombre")
+                .distinct()
+            )
+        agrupado = defaultdict(list)
+
+        for aplicacion in sub_aplicaciones:
+            ruta_base = "/" + aplicacion.aplicacionPrincipal.ruta_base.strip(
+                "/"
+            )
+            ruta_sub = aplicacion.ruta.lstrip("/")
+            url = f"{ruta_base}/{ruta_sub}" if ruta_sub else ruta_base
+            agrupado[aplicacion.aplicacionPrincipal].append(
+                {
+                    "nombre": aplicacion.nombre,
+                    "url": url,
+                }
+            )
+
+        return [
+            {
+                "nombre": principal.nombre,
+                "url": principal.ruta_base,
+                "aplicaciones": subs,
+            }
+            for principal, subs in agrupado.items()
+        ]
+
+    def tiene_acceso(self, nombre_aplicacion):
+        if (
+            self.is_superuser
+            or self.groups.filter(name="Administradores").exists()
+        ):
+            return True
+        return self.aplicaciones_habilitadas.filter(
+            nombre="nombre_aplicacion"
+        ).exists()
 
     def save(self, *args, **kwargs):
         if not self.rol:

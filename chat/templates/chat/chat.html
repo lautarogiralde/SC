@@ -2,7 +2,7 @@
 {% load static %}
 {% load partials %}
 {% block extra_css %}
-    <link href="{% static 'core/css/base.css' %}" rel="stylesheet">
+    <link href="{% static 'chat/css/chat.css' %}" rel="stylesheet">
 {% endblock %}
 {% partialdef panel-chat %}
     {% if chat_activo %}
@@ -64,7 +64,7 @@
                         <button type="button"
                                 class="list-group-item list-group-item-action p-3 border-bottom text-start"
                                 hx-get="{% url 'detalle_prueba' uuid=chat.uuid %}"
-                                hx-target="#panel-chat-containder"
+                                hx-target="#panel-chat-container"
                                 hx-swap="innerHTML"
                                 hx-push-url="false">
                             <div class="d-flex w-100 justify-content-between align-items-center">
@@ -79,6 +79,7 @@
                 </div>
             {% endif %}
         </aside>
-        <div id="panel-chat-containder" class="panel-chat-containder container">{% partial panel-chat %}</div>
+        <div id="panel-chat-container"
+             class="panel-chat-container container overflow-hidden">{% partial panel-chat %}</div>
     </div>
 {% endblock %}
