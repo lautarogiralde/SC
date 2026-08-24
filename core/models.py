@@ -116,7 +116,7 @@ class Usuario(AbstractUser):
     history = HistoricalRecords()
 
     def get_aplicaciones_habilitadas(self):
-        agrupado = defaultdict(list)
+        conjunto = defaultdict(list)
         if (
             self.is_superuser
             or self.groups.filter(name="Administradores").exists()
@@ -138,14 +138,14 @@ class Usuario(AbstractUser):
                             f"{ruta_base}/{ruta_sub}" if ruta_sub else ruta_base
                         )
 
-                        agrupado[principal].append(
+                        conjunto[principal].append(
                             {
                                 "nombre": sub_aplicacion.nombre,
                                 "url": url,
                             }
                         )
                 else:
-                    agrupado[principal] = []
+                    conjunto[principal] = []
 
         else:
             sub_aplicaciones = (
@@ -159,7 +159,6 @@ class Usuario(AbstractUser):
                 .order_by("aplicacionPrincipal__nombre", "nombre")
                 .distinct()
             )
-        agrupado = defaultdict(list)
 
         for aplicacion in sub_aplicaciones:
             ruta_base = "/" + aplicacion.aplicacionPrincipal.ruta_base.strip(
@@ -167,7 +166,7 @@ class Usuario(AbstractUser):
             )
             ruta_sub = aplicacion.ruta.lstrip("/")
             url = f"{ruta_base}/{ruta_sub}" if ruta_sub else ruta_base
-            agrupado[aplicacion.aplicacionPrincipal].append(
+            conjunto[aplicacion.aplicacionPrincipal].append(
                 {
                     "nombre": aplicacion.nombre,
                     "url": url,
@@ -180,7 +179,7 @@ class Usuario(AbstractUser):
                 "url": principal.ruta_base,
                 "aplicaciones": subs,
             }
-            for principal, subs in agrupado.items()
+            for principal, subs in conjunto.items()
         ]
 
     def tiene_acceso(self, nombre_aplicacion):
